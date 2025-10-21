@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/server_stats.dart';
-import 'circular_progress.dart'; // Убедитесь, что переименовали файл
+import 'circular_progress.dart';
 
 class StatsCard extends StatelessWidget {
   final ServerStats stats;
@@ -95,17 +95,17 @@ class StatsCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    CircularProgressWidget( // Изменили название
+                    CircularProgressWidget( 
                       value: stats.cpuUsage,
                       label: 'CPU',
                       color: _getColorForValue(stats.cpuUsage, 'cpu'),
                     ),
-                    CircularProgressWidget( // Изменили название
+                    CircularProgressWidget( 
                       value: stats.memoryUsage,
                       label: 'RAM',
                       color: _getColorForValue(stats.memoryUsage, 'memory'),
                     ),
-                    CircularProgressWidget( // Изменили название
+                    CircularProgressWidget( 
                       value: stats.diskUsage,
                       label: 'Disk',
                       color: _getColorForValue(stats.diskUsage, 'disk'),

@@ -131,7 +131,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'И т.д.',
+                      'И т.д. (здесь будут добавления по мере необходимости)',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[500],
