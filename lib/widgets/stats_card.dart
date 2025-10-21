@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/server_stats.dart';
 import 'circular_progress.dart';
+import '../screens/server_detail_screen.dart';
 
 class StatsCard extends StatelessWidget {
   final ServerStats stats;
@@ -30,7 +31,15 @@ class StatsCard extends StatelessWidget {
       elevation: 3,
       margin: const EdgeInsets.all(8),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          // Открываем экран с детальной информацией
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ServerDetailScreen(stats: stats),
+            ),
+          );
+        },
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

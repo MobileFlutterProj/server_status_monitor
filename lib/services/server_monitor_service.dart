@@ -11,10 +11,25 @@ class ServerMonitorService {
     _servers.add(config);
   }
 
+  void updateServer(ServerConfig updatedConfig) {
+    final index = _servers.indexWhere((server) => server.id == updatedConfig.id);
+    if (index != -1) {
+      _servers[index] = updatedConfig;
+    }
+  }
+
   void removeServer(String id) {
     _servers.removeWhere((server) => server.id == id);
   }
-
+  
+  ServerConfig? getServerById(String id) {
+    try {
+      return _servers.firstWhere((server) => server.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+  
   Future<ServerStats> getServerStats(ServerConfig config) async {
     try {
       // Создаем SSH соединение
