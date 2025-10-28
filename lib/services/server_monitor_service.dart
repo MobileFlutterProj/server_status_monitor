@@ -66,7 +66,7 @@ class ServerMonitorService {
       final tempResult = await client.execute(
         'cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || '
         'cat /sys/class/thermal/thermal_zone1/temp 2>/dev/null || '
-        'echo "0"'
+        'echo "0"echo "0"'
       );
       final temperature = _parseTemperature(tempResult);
       
