@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:server_status_monitor/services/server_monitor_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
 
-void main() {
-  runApp(const ServerMonitorApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final monitorService = ServerMonitorService();
+  await monitorService.loadServers(); // ← Загружаем сохранённые серверы
+  runApp(MyApp(monitorService: monitorService));
 }
 
-class ServerMonitorApp extends StatelessWidget {
-  const ServerMonitorApp({super.key});
+class MyApp extends StatelessWidget {
+  final ServerMonitorService monitorService; // ← добавьте поле
+
+  const MyApp({super.key, required this.monitorService}); // ← добавьте параметр
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +24,16 @@ class ServerMonitorApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: const AppLoader(),
+      home: AppLoader(monitorService: monitorService), // ← передайте в AppLoader
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class AppLoader extends StatefulWidget {
-  const AppLoader({super.key});
+  final ServerMonitorService monitorService; // ← добавьте поле
+
+  const AppLoader({super.key, required this.monitorService}); // ← добавьте параметр
 
   @override
   State<AppLoader> createState() => _AppLoaderState();
@@ -44,6 +52,6 @@ class _AppLoaderState extends State<AppLoader> {
               });
             },
           )
-        : const HomeScreen();
+        : HomeScreen(monitorService: widget.monitorService); // ← передайте в HomeScreen
   }
 }

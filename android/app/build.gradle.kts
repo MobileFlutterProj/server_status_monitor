@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.server_status_monitor"
+    namespace = "com.example.test_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.server_status_monitor"
+        applicationId = "com.example.test_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -37,6 +37,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
+    implementation("com.jcraft:jsch:0.1.55") 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3") 
 }
 
 flutter {

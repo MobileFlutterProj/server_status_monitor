@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import '../services/server_monitor_service.dart';
 
 class AddServerDialog extends StatefulWidget {
-  final Function(ServerConfig) onAdd;
+  final ServerConfig? server;
+  final Function(ServerConfig) onSave;
 
-  const AddServerDialog({super.key, required this.onAdd});
+  const AddServerDialog({
+    super.key,
+    this.server,
+    required this.onSave,
+  });
 
   @override
   State<AddServerDialog> createState() => _AddServerDialogState();
@@ -17,11 +22,27 @@ class _AddServerDialogState extends State<AddServerDialog> {
   final _portController = TextEditingController(text: '22');
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _usePrivateKey = false;
+
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isEditing = widget.server != null;
+    
+    if (_isEditing) {
+      _nameController.text = widget.server!.name;
+      _hostController.text = widget.server!.host;
+      _portController.text = widget.server!.port.toString();
+      _usernameController.text = widget.server!.username;
+      _passwordController.text = widget.server!.password;
+    }
+  }
 
   void _saveServer() {
     if (_formKey.currentState!.validate()) {
       final config = ServerConfig(
+        id: _isEditing ? widget.server!.id : null,
         name: _nameController.text,
         host: _hostController.text,
         port: int.tryParse(_portController.text) ?? 22,
@@ -29,7 +50,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
         password: _passwordController.text,
       );
       
-      widget.onAdd(config);
+      widget.onSave(config);
       Navigator.pop(context);
     }
   }
@@ -45,18 +66,20 @@ class _AddServerDialogState extends State<AddServerDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Server Status Monitor',
-                style: TextStyle(
+              Text(
+                _isEditing ? 'Редактировать сервер' : 'Добавить сервер',
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Добавление нового сервера',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+              Text(
+                _isEditing 
+                  ? 'Измените данные подключения к серверу'
+                  : 'Введите данные для подключения к серверу',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
               
@@ -68,6 +91,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                       controller: _nameController,
                       label: 'Название сервера',
                       hintText: 'Мой сервер',
+                      icon: Icons.computer,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Введите название сервера';
@@ -78,11 +102,12 @@ class _AddServerDialogState extends State<AddServerDialog> {
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _hostController,
-                      label: 'URL-адрес',
+                      label: 'IP адрес или домен',
                       hintText: '192.168.1.100 или example.com',
+                      icon: Icons.language,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Введите URL-адрес сервера';
+                          return 'Введите адрес сервера';
                         }
                         return null;
                       },
@@ -90,8 +115,9 @@ class _AddServerDialogState extends State<AddServerDialog> {
                     const SizedBox(height: 16),
                     _buildTextField(
                       controller: _portController,
-                      label: 'Порт',
+                      label: 'SSH порт',
                       hintText: '22',
+                      icon: Icons.numbers,
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -109,6 +135,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                       controller: _usernameController,
                       label: 'Имя пользователя',
                       hintText: 'user',
+                      icon: Icons.person,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Введите имя пользователя';
@@ -121,6 +148,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                       controller: _passwordController,
                       label: 'Пароль',
                       hintText: 'password',
+                      icon: Icons.lock,
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -129,14 +157,34 @@ class _AddServerDialogState extends State<AddServerDialog> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Подсказка для тестирования
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'И т.д. (здесь будут добавления по мере необходимости)',
+                      '💡 Для тестирования:',
                       style: TextStyle(
+                        fontWeight: FontWeight.bold,
                         fontSize: 12,
-                        color: Colors.grey[500],
-                        fontStyle: FontStyle.italic,
                       ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '• test.rebex.net:22 (demo/password)\n'
+                      '• Локальный сервер: 127.0.0.1:22',
+                      style: TextStyle(fontSize: 10),
                     ),
                   ],
                 ),
@@ -164,7 +212,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Сохранить'),
+                      child: Text(_isEditing ? 'Сохранить' : 'Добавить'),
                     ),
                   ),
                 ],
@@ -179,7 +227,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    String? hintText,
+    required String hintText,
+    required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
     String? Function(String?)? validator,
@@ -192,13 +241,9 @@ class _AddServerDialogState extends State<AddServerDialog> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
       ),
     );
   }

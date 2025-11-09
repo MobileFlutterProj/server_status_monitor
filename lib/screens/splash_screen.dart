@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _initializeApp() async {
     // Имитация загрузки данных
-    await Future.delayed(const Duration(seconds: 20));
+    await Future.delayed(const Duration(seconds: 5));
     
     // Переход на главный экран
     widget.onInitializationComplete();

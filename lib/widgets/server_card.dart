@@ -32,13 +32,13 @@ class ServerCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // Информация о сервере - ИСПРАВЛЕННЫЕ НАЗВАНИЯ ПОЛЕЙ
+              // Информация о сервере
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      stats.serverName, // было: server.name
+                      stats.serverName, 
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class ServerCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${stats.ipAddress}:22', // было: server.url и server.port
+                      '${stats.ipAddress}:22',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -54,7 +54,7 @@ class ServerCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Последняя проверка: ${stats.lastUpdateFormatted}', // было: server.lastChecked
+                      'Последняя проверка: ${stats.lastUpdateFormatted}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[500],

@@ -7,16 +7,20 @@ import '../models/server_stats.dart';
 import '../widgets/stats_card.dart';
 import 'edit_server_screen.dart';
 import 'settings_screen.dart';
+import 'server_detail_screen.dart';
+import '../widgets/add_server_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ServerMonitorService monitorService;
+
+  const HomeScreen({super.key, required this.monitorService});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ServerMonitorService _monitorService = ServerMonitorService();
+  ServerMonitorService get _monitorService => widget.monitorService;
   final SettingsService _settingsService = SettingsService();
   final List<ServerStats> _serverStats = [];
   Timer? _refreshTimer;
@@ -25,13 +29,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSettings();
-    _addSampleServer();
+    _initializeApp();
+}
+
+  Future<void> _initializeApp() async {
+    await _loadSettings();
+
+    // Загружаем сохранённые серверы
+    await _monitorService.loadServers();
+
+  // Обновляем метрики всех серверов
+  _refreshAllServers();
   }
 
-  void _loadSettings() async {
-    _settings = await _settingsService.loadSettings();
-    _startAutoRefresh();
+  Future<void> _loadSettings() async {
+  _settings = await _settingsService.loadSettings();
+  _startAutoRefresh();
   }
 
   void _startAutoRefresh() {
@@ -45,15 +58,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _addSampleServer() {
-    _monitorService.addServer(ServerConfig(
-      name: 'Main Server',
-      host: '192.168.1.100',
-      username: 'username',
-      password: 'password',
-    ));
-    _refreshAllServers();
-  }
+  // void _addSampleServer() {
+  //   Тестовый сервер 1 - работающий (публичный тестовый SSH)
+  //   _monitorService.addServer(ServerConfig(
+  //     name: 'Fedora',
+  //     host: '192.168.0.16',
+  //     port: 22,
+  //     username: 'monitor',
+  //     password: 'a10wi320fi',
+  //   ));
+
+  //   Тестовый сервер 2 - офлайн (несуществующий IP)
+  //   _monitorService.addServer(ServerConfig(
+  //     name: 'Локальный сервер',
+  //     host: '192.168.1.999', // Несуществующий IP
+  //     port: 22,
+  //     username: 'user',
+  //     password: 'password',
+  //   ));
+
+  //    Тестовый сервер 3 - для локального тестирования
+  //   _monitorService.addServer(ServerConfig(
+  //     name: 'Локальный хост',
+  //     host: '127.0.0.1',
+  //     port: 22,
+  //     username: 'test',
+  //     password: 'test',
+  //   ));
+
+  //   _refreshAllServers();
+  // }
 
   void _showServerMenu(BuildContext context, int index) {
     final serverConfig = _monitorService.servers[index];
@@ -93,21 +127,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _editServer(ServerConfig server) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditServerScreen(
-          server: server,
-          onSave: (updatedConfig) {
-            _monitorService.updateServer(updatedConfig);
-            _refreshAllServers();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Сервер обновлен')),
-            );
-          },
-        ),
-      ),
-    );
+  showDialog(
+    context: context,
+    builder: (context) => AddServerDialog(
+      server: server, // Передаем сервер для редактирования
+      onSave: (updatedConfig) {
+        _monitorService.updateServer(updatedConfig);
+        _refreshAllServers();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Сервер обновлен')),
+        );
+      },
+    ),
+  );
   }
 
   void _deleteServer(String serverId, int index) {
@@ -149,20 +181,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _addServer() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditServerScreen(
-          onSave: (config) {
-            _monitorService.addServer(config);
-            _refreshAllServers();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Сервер добавлен')),
-            );
-          },
-        ),
-      ),
-    );
+  showDialog(
+    context: context,
+    builder: (context) => AddServerDialog(
+      onSave: (config) {
+        _monitorService.addServer(config);
+        _refreshAllServers();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Сервер добавлен')),
+        );
+      },
+    ),
+  );
   }
 
   Future<void> _refreshAllServers() async {
@@ -251,7 +281,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onLongPress: () => _showServerMenu(context, index),
-                    child: StatsCard(stats: _serverStats[index]),
+                    child: StatsCard(
+                      stats: _serverStats[index],
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ServerDetailScreen(
+                              stats: _serverStats[index],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),

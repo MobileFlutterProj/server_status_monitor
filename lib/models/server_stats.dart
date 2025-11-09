@@ -9,6 +9,7 @@ class ServerStats {
   final double temperature;
   final int uptime;
   final bool isOnline;
+  final bool isCachedData;
 
   ServerStats({
     required this.serverName,
@@ -21,6 +22,7 @@ class ServerStats {
     required this.temperature,
     required this.uptime,
     required this.isOnline,
+    this.isCachedData = false,
   });
 
   ServerStats copyWith({
@@ -34,6 +36,7 @@ class ServerStats {
     double? temperature,
     int? uptime,
     bool? isOnline,
+    bool? isCachedData,
   }) {
     return ServerStats(
       serverName: serverName ?? this.serverName,
@@ -46,6 +49,23 @@ class ServerStats {
       temperature: temperature ?? this.temperature,
       uptime: uptime ?? this.uptime,
       isOnline: isOnline ?? this.isOnline,
+      isCachedData: isCachedData ?? this.isCachedData,
+    );
+  }
+
+  ServerStats asCached() {
+    return ServerStats(
+      serverName: serverName,
+      ipAddress: ipAddress,
+      lastUpdate: lastUpdate,
+      cpuUsage: cpuUsage,
+      memoryUsage: memoryUsage,
+      diskUsage: diskUsage,
+      networkUsage: networkUsage,
+      temperature: temperature,
+      uptime: uptime,
+      isOnline: false,
+      isCachedData: true,
     );
   }
 
@@ -76,5 +96,11 @@ class ServerStats {
     } else {
       return '${difference.inDays} дн назад';
     }
+  }
+
+  bool get isCacheValid {
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdate);
+    return difference.inMinutes < 60;
   }
 }
