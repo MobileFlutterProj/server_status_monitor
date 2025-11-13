@@ -192,6 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _currentSettings.refreshInterval,
               isExpanded: true,
               items: const [
+                DropdownMenuItem(value: 1, child: Text('1 минут')),
                 DropdownMenuItem(value: 5, child: Text('5 минут')),
                 DropdownMenuItem(value: 10, child: Text('10 минут')),
                 DropdownMenuItem(value: 15, child: Text('15 минут')),

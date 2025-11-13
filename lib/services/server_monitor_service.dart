@@ -115,7 +115,7 @@ class ServerMonitorService {
         username: config.username,
         password: config.password,
         command:
-            'cat /proc/net/dev | grep -E "(eth0|ens|wlan|wlo1)" | head -1',
+            'cat /proc/net/dev | grep -E "(eth0|ens|wlan|wlo)" | head -1',
       );
       final hostnameOutput = await NativeSSHClient.execute(
         host: config.host,

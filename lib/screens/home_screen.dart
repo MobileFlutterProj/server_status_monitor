@@ -9,6 +9,7 @@ import 'edit_server_screen.dart';
 import 'settings_screen.dart';
 import 'server_detail_screen.dart';
 import '../widgets/add_server_dialog.dart';
+import '../services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final ServerMonitorService monitorService;
@@ -22,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   ServerMonitorService get _monitorService => widget.monitorService;
   final SettingsService _settingsService = SettingsService();
+  final NotificationService _notificationService = NotificationService();
   final List<ServerStats> _serverStats = [];
   Timer? _refreshTimer;
   late AppSettings _settings;
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _notificationService.init();
     _initializeApp();
 }
 
@@ -196,30 +199,60 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refreshAllServers() async {
-    try {
-      final futures = _monitorService.servers.map((server) {
-        return _monitorService.getServerStats(server);
-      }).toList();
+  try {
+    final futures = _monitorService.servers.map((server) {
+      return _monitorService.getServerStats(server);
+    }).toList();
 
-      final results = await Future.wait(futures);
-      
-      if (mounted) {
-        setState(() {
-          _serverStats.clear();
-          _serverStats.addAll(results);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Ошибка обновления: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+    final List<ServerStats> results = await Future.wait(futures);
+
+    if (mounted) {
+      // Сначала обновляем UI
+      setState(() {
+        _serverStats.clear();
+        _serverStats.addAll(results);
+      });
+
+      // Затем проверяем критические условия
+      for (int i = 0; i < results.length; i++) {
+        final newStats = results[i];
+        final oldStats = i < _serverStats.length ? _serverStats[i] : null;
+
+        if (_settings.notificationsEnabled) {
+          // Сервер перешёл в ОФФЛАЙН
+          if (oldStats != null && oldStats.isOnline && !newStats.isOnline) {
+            _notificationService.showCriticalAlert(
+              'Сервер недоступен',
+              '${newStats.serverName} перестал отвечать',
+            );
+          }
+
+          // CPU > 95%
+          if (newStats.cpuUsage > 95 && (oldStats?.cpuUsage ?? 0) <= 95) {
+            _notificationService.showCriticalAlert(
+              'Высокая нагрузка на CPU',
+              '${newStats.serverName}: ${newStats.cpuUsage.toStringAsFixed(1)}%',
+            );
+          }
+
+          // Температура > 80°C
+          if (newStats.temperature > 80 && (oldStats?.temperature ?? 0) <= 80) {
+            _notificationService.showCriticalAlert(
+              'Высокая температура',
+              '${newStats.serverName}: ${newStats.temperature.toStringAsFixed(1)}°C',
+            );
+          }
+        }
       }
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка обновления: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
+}
 
   void _openSettings() {
     Navigator.push(

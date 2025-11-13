@@ -11,9 +11,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final ServerMonitorService monitorService; // ← добавьте поле
+  final ServerMonitorService monitorService;
 
-  const MyApp({super.key, required this.monitorService}); // ← добавьте параметр
+  const MyApp({super.key, required this.monitorService});
 
   @override
   Widget build(BuildContext context) {
@@ -24,16 +24,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: AppLoader(monitorService: monitorService), // ← передайте в AppLoader
+      home: AppLoader(monitorService: monitorService),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class AppLoader extends StatefulWidget {
-  final ServerMonitorService monitorService; // ← добавьте поле
+  final ServerMonitorService monitorService;
 
-  const AppLoader({super.key, required this.monitorService}); // ← добавьте параметр
+  const AppLoader({super.key, required this.monitorService});
 
   @override
   State<AppLoader> createState() => _AppLoaderState();
@@ -52,6 +52,6 @@ class _AppLoaderState extends State<AppLoader> {
               });
             },
           )
-        : HomeScreen(monitorService: widget.monitorService); // ← передайте в HomeScreen
+        : HomeScreen(monitorService: widget.monitorService);
   }
 }
